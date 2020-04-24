@@ -1,0 +1,37 @@
+#%RAML 1.0
+title: verify-phone
+baseUri: http://apilayer.net/api
+
+/validate:
+  get:
+    queryParameters:
+      access_key: string
+      number: string
+    responses:
+        403:
+          body:
+            application/json:
+              properties:
+                message: string
+              example:
+                {
+                  message: "Resource does not exist"
+                }  
+        400: 
+          body:
+            application/json:
+              properties:
+                message: string
+              example:
+               {
+                  message: "API Key is Invalid"
+               }  
+        200:
+          body:
+            application/json:
+              example:
+                {
+                  "valid":true,
+                  "number":"14158586273"
+                  
+                }  

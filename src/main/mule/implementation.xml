@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="implementationFlow" doc:id="fd94c4ae-7be5-43a4-a2fc-500ba47ea090" >
+		<logger level="INFO" doc:name="Logger" doc:id="1e1988fe-645e-4978-91a0-aed36984eb83" message="PhoneNumber:  #[attributes.queryParams.number]"/>
+		<validation:matches-regex doc:name="Matches regex" doc:id="b3310ae8-0c15-43a7-871f-f6dcc9f2a8d1" value="#[attributes.queryParams.number]" regex="^[0-9]{11}$" message="Phone number not valid."/>
+		<http:request method="POST" doc:name="Request" doc:id="b813b9f7-97d7-426b-8106-439b4b4f750e" path="${http.path}" config-ref="Numverify_HTTP_Request_configuration">
+			<http:body ><![CDATA[payload]]></http:body>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	number : attributes.queryParams.number,
+	access_key : p('access_key')
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="a9b6c924-00d7-4074-a532-b26ef3e7c9ff" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+
+phonedetails:{
+	number: payload.number,
+	localformat: payload.local_format,
+	countryCode: payload.country_code,
+	countryname: payload.country_name
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="5ea03346-c8d0-4c48-bc7e-1a83cb8571dc" message="Response send to number verify #[payload]"/>
+	</flow>
+</mule>
